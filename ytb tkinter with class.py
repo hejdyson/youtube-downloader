@@ -1,5 +1,6 @@
 from tkinter import *
 from pytube import YouTube
+from pytube.exceptions import RegexMatchError
 import os
 from pathlib import Path
 
@@ -21,7 +22,7 @@ def download(yt_info):
 
 
 def show_error_message():
-    feedback_label['text'] = 'Fill in missing information'
+    feedback_label['text'] = 'Fill in missing information or enter valid link'
     feedback_label['fg'] = 'red'
 
 
@@ -29,6 +30,7 @@ def convert(yt_info):
 
     url = url_value.get()
     resolution = var.get()
+    print('1 url', url)
 
     if url and resolution:
 
@@ -46,24 +48,31 @@ def convert(yt_info):
         # updating feedback label with title of video
         if yt_info.itag is not None:
             feedback_label['text'] = ''
-            yt_info.yt = YouTube(url)
-            feedback_label['text'] = 'File to download is: ' + yt_info.yt.title + '. ' + '(' + yt_info.resolution_table[resolution-1] + ')'
-            feedback_label['fg'] = 'darkgreen'
-            
-            # help print of available streams
-            # print(yt.streams.filter(only_audio=True))
-            # for stream in yt.streams:
-            #     print(stream)
+            try:
+                print('2 url', url)
+                yt_info.yt = YouTube(url)
+                feedback_label['text'] = 'File to download is: ' + yt_info.yt.title + '. ' + '(' + yt_info.resolution_table[resolution-1] + ')'
+                feedback_label['fg'] = 'darkgreen'
 
-            # download button available
-            b2['state'] = NORMAL
-            b2['bg'] = 'lightgreen'
-        
+                # make download button available
+                b2['state'] = NORMAL
+                b2['bg'] = 'lightgreen'
+            except RegexMatchError:
+                show_error_message()
+                b2['state'] = DISABLED
+                b2['bg'] = 'lightgrey'
+
+            # help print of available streams
+            # print(yt_info.yt.streams)
+
         else:
             show_error_message()
 
+
     else:
         show_error_message()
+        b2['state'] = DISABLED
+        b2['bg'] = 'lightgrey'
 
 
 # create instance of a class
